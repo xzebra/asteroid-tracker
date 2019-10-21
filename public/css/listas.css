@@ -1,0 +1,57 @@
+.caja{
+  margin: 50px auto;
+  width: 80%;
+  background-color: rgba(100, 100, 100, 0.6);
+  position: relative;
+  color: #CCCCCC;
+  border-radius: 7px;
+  z-index:999999;
+}
+
+.caja p{
+  padding: 20px;
+  color: #CCCCCC;
+}
+
+.caja table{
+  padding: 20px;
+  color: #CCCCCC;
+}
+
+.caja thead {
+  width: calc(100% - 1em);
+  background-color:rgba(100, 100, 100, 0.8) !important;
+}
+
+.caja thead, tbody tr {
+  display:table;
+  width:100%;
+  table-layout:fixed;
+}
+
+.caja tr:nth-child(even) {
+  background-color: rgba(100, 100, 100, 0.8);
+}
+
+.caja th {
+  width:25%;
+  text-align:center;
+  padding: 1em 0;
+}
+
+.caja td {
+  width:25%;
+  text-align:center;
+  padding: 0.25em 0;
+}
+
+.scrollable {
+  height:70%;
+  overflow:auto;
+}
+
+@media only screen and (max-height: 650px) {
+  .scrollable {
+    height:50%
+  }
+}

@@ -1,0 +1,198 @@
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Asteroid</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/menu.css">
+    <link rel="stylesheet" href="/css/meteors.css">
+    <link rel="stylesheet" href="/css/listas.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+            <a class="navbar-brand" href="/">Asteroids</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="/">Home</a></li>
+                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">List <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/list">All</a></li>
+                        <li><a href="/list/size">Size</a></li>
+                        <li><a href="/list/dangerous">Dangerous</a></li>
+                        <li><a href="/list/speed">Speed</a></li>
+                    </ul>
+                </li>
+                <li><a href="/map/{{.ID}}">Space Map</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <h1 class="index-title">Asteroid data</h1>
+    <div class="caja" style="height: 60%; padding: 2em;">
+        <div style="height: 49%;">
+            <table>
+                <tr>
+                    <td style="text-align:right;text-decoration:underline;">Name:</td><td>{{.Name}}</td>
+                    <td style="text-align:right;text-decoration:underline;">Relative velocity:</td><td>{{(index .ApproachData 0).RelativeVelocity.KilometersPerSecond}}</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right;text-decoration:underline;">Potentially Hazardous:</td><td>{{if .IsHazardous}}✔️{{else}}❌{{end}}</td>
+                    <td style="text-align:right;text-decoration:underline;">Diameter:</td><td>{{.Diameter.Kilometers.Med}} Km</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right;text-decoration:underline;">First observation:</td><td>{{.OrbitalData.FirstObservation}}</td>
+                    <td style="text-align:right;text-decoration:underline;">Last observation:</td><td>{{.OrbitalData.LastObservation}}</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right;text-decoration:underline;">Observations used:</td><td>{{.OrbitalData.Observations}}</td>
+                    <td style="text-align:right;text-decoration:underline;">Approach date:</td><td>{{(index .ApproachData 0).Date}}</td>
+                </tr>
+            </table>
+        </div>
+        <div style="height:50%;">
+            <canvas id="cmpCanvas" height="300px"> </canvas>
+        </div>
+    </div>
+
+    <div class="meteors">
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+        <div class="meteor"></div>
+    </div>
+    <div class="stars">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+
+    <script>
+        const asteroidH = {{.Diameter.Meters.Med}};
+
+        var canvas = document.getElementById("cmpCanvas");
+        var ctx = canvas.getContext("2d");
+        fitToContainer(canvas);
+        draw();
+
+        function fitToContainer(canvas){
+            // Make it visually fill the positioned parent
+            canvas.style.height='100%';
+            canvas.style.width='100%';
+            // ...then set the internal size to match
+            canvas.height = canvas.offsetHeight;
+            canvas.width = canvas.offsetWidth;
+        }
+
+        window.onresize = function() {
+            fitToContainer(canvas);
+            draw();
+        }
+
+        function meterImagen(dir, x, y, anch, alt){
+            // Inserta una imagen en la gráfica
+            let img = new Image();
+            img.src = dir;
+            img.onload = function(){
+                ctx.drawImage(img, x, y, anch, alt);
+            }
+        }
+
+        function draw() {
+            const abajo = canvas.height - 10; // aplicar un padding
+            const eiffelH = 300;
+            const libertyH = 93;
+            const burjH = 828;
+            const distancia = canvas.height/6
+
+            function realHeight(separacion, altura) {
+                return (altura * distancia) / separacion;
+            }
+
+            function rayas(suma) {
+                let numeroH = 0;
+                for (let paso = 0; paso <= abajo; paso += distancia){
+                    ctx.beginPath();
+                    ctx.fillText(numeroH, 10, abajo - paso);
+                    numeroH += suma;
+                    ctx.moveTo(80, abajo - paso);
+                    ctx.lineTo(1000, abajo - paso);
+                    ctx.stroke();
+                }
+            }
+
+            let separacion; // separacion entre rayas
+            if (asteroidH < 300) {
+                separacion = 50;
+            } else if (asteroidH <1000) {
+                separacion = 200;
+            } else if (asteroidH <3000) {
+                separacion = 500;
+            }
+
+            let xOffset = canvas.width/10;
+
+            let imgH = realHeight(separacion, libertyH);
+            let ratio = 900/2589;
+            meterImagen("/res/liberty.png", xOffset, abajo - imgH, imgH*ratio, imgH);
+            xOffset += imgH*ratio + canvas.width/10;
+
+            imgH = realHeight(separacion, eiffelH);
+            ratio = 275/435;
+            meterImagen("/res/eiffel.png", xOffset, abajo - imgH, imgH*ratio, imgH);
+            xOffset += imgH*ratio + canvas.width/10;
+
+            imgH = realHeight(separacion, burjH);
+            ratio = 126/586;
+            meterImagen("/res/burj.png", xOffset, abajo - imgH, imgH*ratio, imgH);
+            xOffset += imgH*ratio + canvas.width/10;
+
+            imgH = realHeight(separacion, asteroidH);
+            ratio = 421/368;
+            meterImagen("/res/asteroid.png", xOffset, abajo - imgH, imgH*ratio, imgH);
+            xOffset += imgH*ratio + canvas.width/10;
+
+            rayas(separacion);
+        }
+
+        window.onload = function() {
+        var canvas = document.getElementById("cmpCanvas");
+            if (canvas && canvas.getContext) {
+                var ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.font = "30px Arial";
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "black";
+                }
+            }
+        }
+    </script>
+  </body>
+</html>

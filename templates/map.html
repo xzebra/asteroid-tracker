@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>Solar System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/menu.css">
+<link rel="stylesheet" href="/css/meteors.css">
+<link rel="stylesheet" href="/css/listas.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<style type="text/css">
+
+body{
+  background-image: url("/res/fondo1.png");
+  background-repeat: repeat;
+}
+
+#solsys{
+  position: absolute;
+  height: auto;
+}
+
+.data {
+  padding: 2em;
+  color: #969696;
+}
+
+</style>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+            <a class="navbar-brand" href="/">Asteroids</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="/">Home</a></li>
+                <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">List <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/list">All</a></li>
+                        <li><a href="/list/size">Size</a></li>
+                        <li><a href="/list/dangerous">Dangerous</a></li>
+                        <li><a href="/list/speed">Speed</a></li>
+                    </ul>
+                </li>
+                <li class="active"><a href="/map/{{.ID}}">Space Map</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <canvas id="solsys" height="500" width="1000"></canvas>
+
+    <div class="data">
+      <h1> More Information about {{.Name}}</h1>
+      <p>
+        On more advanced data about the asteroid:
+        <ul>
+          <li>The image below contains a rough idea of the orbit: the eccentricity is {{.OrbitalData.Eccentricity}}, with a perihelion of {{.OrbitalData.PerihelionDistance}} AU and an aphelion of {{.OrbitalData.AphelionDistance}} AU.</li>
+          <li>Its orbit class is {{.OrbitalData.OrbitClass.OrbitClassType}} ({{.OrbitalData.OrbitClass.OrbitClassDescription}}), and a range of {{.OrbitalData.OrbitClass.OrbitClassRange}}.</li>
+          <li>The 3D representation would have an inclination of {{.OrbitalData.Inclination}} degrees.</li>
+        </ul>
+      </p>
+
+    </div>
+
+
+     <script type="text/javascript">
+       var canvas = document.getElementById("solsys");
+       var ctx = canvas.getContext("2d");
+     fitToContainer(canvas);
+    function fitToContainer(canvas){
+        // Make it visually fill the positioned parent
+        canvas.style.width ='100%';
+        canvas.style.height='100%';
+        // ...then set the internal size to match
+        canvas.width  = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+
+     function drawEllipse(perihelion, aphelion) {
+       ctx.beginPath();
+       ctx.lineWidth = 1;
+		   ctx.strokeStyle = "#ddd";
+       ctx.ellipse(canvas.width/2, canvas.height/2, aphelion, perihelion, 0, 0, 2*Math.PI , true);
+       ctx.stroke();
+     }
+
+     // Checking the browser
+    window.onload = function(){
+     if(navigator.appVersion.indexOf("MSIE 7.") != -1 || navigator.appVersion.indexOf("MSIE 8.") != -1){
+       alert("Please don't use old IE browser");
+    }
+  }
+
+  function text(text,color,font,x,y){
+    ctx.beginPath();
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.fillText(text,x,y);
+    ctx.closePath();
+    //console.log(text);
+  }
+
+  var time = 1;
+  /*set support for requestAnimationFrame - ovrride method */
+  window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || function(callback){window.setTimeout(callback, 1000/60);}
+
+  // Initializing image varaibles
+  var earth = new Image();
+  var moon = new Image();
+  var asteroid = new Image();
+  function setup() {
+    earth.src = "/res/earth.png";
+    moon.src = "/res/moon.png";
+    asteroid.src = "/res/asteroid_small.png";
+    window.requestAnimationFrame(animate);
+  }
+  setup();
+
+  var moonRadius = 175;
+
+function animate(){
+  // Clears the canvas at the beginning
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  // Coloricos
+  ctx.strokeStyle = 'rgba(0, 153, 255, 0.4)';
+  // The resetted state is saved
+  ctx.save();
+  // Centers the canvas
+  ctx.translate(canvas.width/2, canvas.height/2);
+
+  // Showing the earth and animating the rotation
+  ctx.rotate(time/200);
+  ctx.translate(moonRadius-7.5, 0);
+  ctx.drawImage(moon, 0, 12, 15, 15);
+  ctx.save();
+  ctx.rotate(-time / 200);
+  text("Moon", "lightblue","15pt arial", 15,15);
+  ctx.restore();
+  // The resetted state is restored
+  ctx.restore();
+
+  // Moon's orbit is drawn
+  ctx.beginPath();
+  ctx.arc(canvas.width/2, canvas.height/2, moonRadius, 0, Math.PI * 2, false); // Earth orbit
+  ctx.stroke();
+
+  // Showing the moon and upping the time counter
+  ctx.drawImage(earth, canvas.width/2-30, canvas.height/2-30, 60, 60);
+  text("Earth", "green","15pt arial",  canvas.width/2-30, canvas.height/2-40);
+
+  time++;
+
+  // The asteroid is shown
+  var aphelion = {{.OrbitalData.AphelionDistance}}*moonRadius;
+  var perihelion = {{.OrbitalData.PerihelionDistance}}*moonRadius;
+  text("{{.Name}}", "orange","15pt arial", canvas.width/2+aphelion, canvas.height/2 - 10);
+  ctx.drawImage(asteroid, canvas.width/2-5+aphelion, canvas.height/2-5, 10,10); //Resto la mitad de su diametro
+  drawEllipse(perihelion,aphelion);
+
+  window.requestAnimationFrame(animate);
+}
+
+
+</script>
+</body>
